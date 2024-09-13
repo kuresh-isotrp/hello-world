@@ -76,8 +76,10 @@ class RegistrationBehaviour(HelloWorldABCIBaseBehaviour):
         - Send the transaction and wait for it to be mined.
         - Wait until ABCI application transitions to the next round.
         - Go to the next behaviour (set done event).
+        - Read and set the owner address in shared state
         """
         payload = RegistrationPayload(self.context.agent_address)
+        self.context.shared_state["owner_address"] = self.params.owner_address
         yield from self.send_a2a_transaction(payload)
         yield from self.wait_until_round_end()
         self.set_done()
@@ -183,13 +185,14 @@ class PrintMessageBehaviour(HelloWorldABCIBaseBehaviour, ABC):
         - Send the transaction with the printed message and wait for it to be mined.
         - Wait until ABCI application transitions to the next round.
         - Go to the next behaviour (set done event).
+        - Get the owner address from shard state and concatinate with Hello World  
         """
-
+        owner_address =  self.context.shared_state.get("owner_address", None)
         if (
             self.context.agent_address
             == self.synchronized_data.most_voted_keeper_address
         ):
-            message = self.params.hello_world_string
+            message = f"{self.params.hello_world_string} The owner’s address is {owner_address}"
         else:
             message = ":|"
 
