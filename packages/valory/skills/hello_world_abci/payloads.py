@@ -43,6 +43,21 @@ class PrintMessagePayload(BaseTxPayload):
 
     message: str
 
+@dataclass(frozen=True)
+class PrintMessageCountPayload(BaseTxPayload):
+    """Payload for the PrintMessageCountRound."""
+
+    print_count: int
+
+    # def __init__(self, sender: str, print_count: int, **kwargs):
+    #     super().__init__(sender, **kwargs)
+    #     self.print_count = print_count
+
+    # @property
+    # def data(self) -> dict:
+    #     """Return data in dictionary format."""
+    #     return dict(print_count=self.print_count)
+
 
 @dataclass(frozen=True)
 class SelectKeeperPayload(BaseTxPayload):
