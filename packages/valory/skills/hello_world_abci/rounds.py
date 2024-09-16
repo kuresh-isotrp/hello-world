@@ -70,6 +70,7 @@ class SynchronizedData(
             List[str],
             self.db.get_strict("printed_messages"),
         )
+    cross_period_persisted_keys: frozenset[str] = frozenset(["print_count"])
     
 class HelloWorldABCIAbstractRound(AbstractRound, ABC):
     """Abstract round for the Hello World ABCI skill."""
