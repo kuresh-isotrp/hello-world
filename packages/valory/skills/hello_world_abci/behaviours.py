@@ -31,6 +31,7 @@ from packages.valory.skills.hello_world_abci.models import HelloWorldParams, Sha
 from packages.valory.skills.hello_world_abci.payloads import (
     CollectRandomnessPayload,
     PrintMessagePayload,
+    PrintMessageCountPayload,
     RegistrationPayload,
     ResetPayload,
     SelectKeeperPayload,
@@ -39,6 +40,7 @@ from packages.valory.skills.hello_world_abci.rounds import (
     CollectRandomnessRound,
     HelloWorldAbciApp,
     PrintMessageRound,
+    PrintMessageCountRound,
     RegistrationRound,
     ResetAndPauseRound,
     SelectKeeperRound,
@@ -205,6 +207,41 @@ class PrintMessageBehaviour(HelloWorldABCIBaseBehaviour, ABC):
 
         self.set_done()
 
+class PrintMessageCountBehaviour(HelloWorldABCIBaseBehaviour, ABC):
+    """Behaviour for the PrintMessageCountRound."""
+
+    matching_round = PrintMessageCountRound
+
+    def async_act(self) -> Generator:
+        """
+        Do the action.
+
+        Steps:
+        - Get the print count from synchronized data.
+        - Increment the same by 1.
+        - Send the transaction with the printed count message and wait for it to be mined.
+        - Wait until ABCI application transitions to the next round.
+        - Go to the next behaviour (set done event).
+        """
+
+        # Read the current print count from synchronized data
+        print_count_prev = self.synchronized_data.db.get("print_count",0)
+        self.context.logger.info(f"print_count_no={print_count_prev}")
+        print_count = print_count_prev + 1
+        # Print to screen how many times the message has been printed
+        print(f"The message has been printed {print_count} times")
+
+        # Send the updated count in the payload
+        payload = PrintMessageCountPayload(
+            self.context.agent_address,
+            print_count
+        )
+
+        yield from self.send_a2a_transaction(payload)
+        yield from self.wait_until_round_end()
+
+        self.set_done()
+
 
 class ResetAndPauseBehaviour(HelloWorldABCIBaseBehaviour):
     """Reset behaviour."""
@@ -251,5 +288,6 @@ class HelloWorldRoundBehaviour(AbstractRoundBehaviour):
         CollectRandomnessBehaviour,  # type: ignore
         SelectKeeperBehaviour,  # type: ignore
         PrintMessageBehaviour,  # type: ignore
+        PrintMessageCountBehaviour,  # type: ignore
         ResetAndPauseBehaviour,  # type: ignore
     }
